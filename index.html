@@ -41,7 +41,8 @@
     }
 
     .carousel:hover .carousel-control-prev,
-    .carousel:hover .carousel-control-next {
+    .carousel:hover .carousel-control-next,
+    .carousel:hover .fullscreen-button {
       opacity: 1;
     }
 
@@ -102,11 +103,46 @@
       opacity: 1;
     }
 
+    /* Fullscreen button */
+    .fullscreen-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Fullscreen SVG icons */
+    .fullscreen-icon, .exit-fullscreen-icon {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+
+    .exit-fullscreen-icon {
+      display: none;
+    }
+
+    /* When in fullscreen mode */
+    :fullscreen .exit-fullscreen-icon {
+      display: block;
+    }
+
+    :fullscreen .fullscreen-icon {
+      display: none;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .control-btn {
         width: 40px;
         height: 40px;
+      }
+      
+      .fullscreen-button {
+        top: 10px;
+        right: 10px;
       }
     }
   </style>
@@ -116,6 +152,18 @@
 <div id="imageCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
   <!-- Progress bar -->
   <div class="carousel-progress" id="carouselProgress"></div>
+  
+  <!-- Fullscreen button -->
+  <button class="fullscreen-button control-btn" id="fullscreenButton" aria-label="Toggle fullscreen">
+    <!-- Fullscreen icon (shown by default) -->
+    <svg class="fullscreen-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+    </svg>
+    <!-- Exit fullscreen icon (shown when in fullscreen) -->
+    <svg class="exit-fullscreen-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+    </svg>
+  </button>
   
   <!-- Indicators -->
   <div class="carousel-indicators">
@@ -176,6 +224,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     const carousel = document.getElementById('imageCarousel');
     const progressBar = document.getElementById('carouselProgress');
+    const fullscreenButton = document.getElementById('fullscreenButton');
     const interval = 5000; // Match this with data-bs-interval
     
     // Progress bar animation
@@ -200,6 +249,8 @@
         bootstrap.Carousel.getInstance(carousel).prev();
       } else if (e.key === 'ArrowRight') {
         bootstrap.Carousel.getInstance(carousel).next();
+      } else if (e.key === 'Escape' && document.fullscreenElement) {
+        document.exitFullscreen();
       }
     });
     
@@ -217,7 +268,41 @@
       });
     }
     
-    // Touch swipe support is already included in Bootstrap 5
+    // Fullscreen functionality
+    fullscreenButton.addEventListener('click', toggleFullScreen);
+    
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        // Enter fullscreen
+        if (carousel.requestFullscreen) {
+          carousel.requestFullscreen();
+        } else if (carousel.webkitRequestFullscreen) { /* Safari */
+          carousel.webkitRequestFullscreen();
+        } else if (carousel.msRequestFullscreen) { /* IE11 */
+          carousel.msRequestFullscreen();
+        }
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+          document.msExitFullscreen();
+        }
+      }
+    }
+    
+    // Update button appearance when fullscreen state changes
+    document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+    
+    function updateFullscreenButtonState() {
+      // The CSS handles the icon switching based on fullscreen state
+      // This function can be used for additional state changes if needed
+    }
   });
 </script>
 </body>
